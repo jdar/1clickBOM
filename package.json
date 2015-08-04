@@ -9,7 +9,7 @@
     "url": "https://github.com/monostable/1clickBOM"
   },
   "author": "Kaspar Emanuel",
-  "license": "CPAL",
+  "license": "CPAL-1.0",
   "bugs": {
     "url": "https://github.com/monostable/1clickBOM/issues"
   },
@@ -17,6 +17,8 @@
   "devDependencies": {
     "browserify": "^10.2.4",
     "coffee-script": "^1.9.3",
-    "coffeeify": "^1.1.0"
+    "coffeeify": "^1.1.0",
+    "globule": "^0.2.0",
+    "ninja-build-gen": "^0.1.3"
   }
 }
