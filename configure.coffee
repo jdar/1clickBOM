@@ -20,13 +20,23 @@ ninja.header("#generated from #{path.basename(module.filename)}")
 ninja.rule('copy').run('cp $in $out')
     .description('$command')
 
-ninja.rule('browserify')
-    .run("echo '$out:' > $in.d && #{browserify} $in -o $out --list >> $in.d")
-    .depfile('$in.d')
+ninja.rule('browserify_deps')
+    .run("echo -n '$target: ' > $out && #{browserify} $in --list | tr '\\n' ' ' >> $out")
 
-chrome_main = 'build/.temp-chrome/main.coffee'
-ninja.edge('build/chrome/js/main.js').from(chrome_main)
-    .after(globule.find([
+ninja.rule('browserify')
+    .run("#{browserify} $in -o $out")
+    .depfile('$out.d')
+
+chrome_main_coffee = 'build/.temp-chrome/main.coffee'
+chrome_main_js = 'build/chrome/js/main.js'
+
+ninja.edge(chrome_main_js).from(chrome_main_coffee)
+    .after(chrome_main_js + '.d')
+    .using('browserify')
+
+ninja.edge(chrome_main_js + '.d').from(chrome_main_coffee)
+    .assign('target', chrome_main_js)
+    .need(globule.find([
         "src/chrome/coffee/*.coffee"
         "src/common/coffee/*.coffee"
         "src/common/libs/*.js"
@@ -34,7 +44,7 @@ ninja.edge('build/chrome/js/main.js').from(chrome_main)
     ]).map (f) ->
         f.replace(/src\/.*?\/.*?\//, "build/.temp-chrome/")
     )
-    .using('browserify')
+    .using('browserify_deps')
 
 for browser in ['chrome', 'firefox']
     for f in globule.find([
