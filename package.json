@@ -13,6 +13,9 @@
   "bugs": {
     "url": "https://github.com/monostable/1clickBOM/issues"
   },
+  "browser": {
+    "./background":"./src/common/coffee/background"
+  },
   "homepage": "http://1clickBOM.com",
   "devDependencies": {
     "browserify": "^10.2.4",
