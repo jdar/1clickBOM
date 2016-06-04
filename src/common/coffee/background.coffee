@@ -129,12 +129,34 @@ exports.background = (messenger) ->
         tsvPageNotifier.addToBOM () ->
             sendState()
 
-    messenger.on 'loadFromRef', (ref) ->
-        browser.notificationsCreate
-            type    : 'basic'
-            title   : 'added '+ref
-            message : 'added '+ref+' to BOM and ... .'
-            iconUrl : '/images/ok.png'
+    messenger.on 'loadFromPartNumberAndRef', (partNumber, ref) ->
+        if not ref.match(/\d/g)?
+            rand_1_to_1000 = Math.floor(Math.random() * (1000 - 1) + 1)
+            ref = ref + rand_1_to_1000.toString()
+        #TODO: loop until ref with number is not already used...
+        tsv_text = 'reference\tpart\tqty\n'+ref+'\t'+partNumber+'\t1'
+
+        bom_manager.addToBOM tsv_text, () ->
+            sendState()
+            #TODO: "Added one part: " + partNumber + ' as ' + ref
+            browser.notificationsCreate
+                type    : 'basic'
+                title   : 'Added one part'
+                message : 'Added one part'
+                iconUrl : '/images/ok.png'
+
+
+    messenger.on 'removeByRef', (ref) ->
+        #TODO: remove... but not using BOM manager?
+        bom_manager.addToBOM "", () ->
+            sendState()
+            browser.notificationsCreate
+                type    : 'basic'
+                title   : 'Removed one part'
+                message : 'Removed one part'
+                iconUrl : '/images/ok.png'
+
+
 
     messenger.on 'emptyCarts', () ->
         for name in retailer_list

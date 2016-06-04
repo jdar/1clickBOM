@@ -18,6 +18,7 @@
 # the Original Code is Kaspar Emanuel.
 
 {messenger} = require './messenger'
+# {browser} = require './browser'
 {retailer_list, isComplete, hasSKUs} = require('1-click-bom').lineData
 
 element_Bom              = document.querySelector('#bom')
@@ -133,8 +134,9 @@ render = (state) ->
         quantity += line.quantity
 
     removeChildren(element_TotalItems)
-    element_TotalItems.appendChild(document.createTextNode("#{quantity}
-        item#{if quantity != 1 then 's' else ''}"))
+    element_TotalItems.innerHTML = "#{quantity} <a>item#{if quantity != 1 then 's' else ''}</a>"
+    #element_TotalItems.find 'a', ()-> 
+    #  browser.tabsCreate(browser.getURL('html/options.html'))
 
     while element_Table.hasChildNodes()
         element_Table.removeChild(element_Table.lastChild)

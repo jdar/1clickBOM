@@ -18,32 +18,86 @@
 # the Original Code is Kaspar Emanuel.
 {browser} = require './browser'
 {messenger} = require('./messenger')
+extend = exports.extend = (object, properties) ->
+  for key, val of properties
+    object[key] = val
+  object
+
+#Halp? ordering? missing? op-amps? I bet 'resistor networks' are rarely bought on octopart
+categories_descriptions = {
+'D' : 'D: diodes (including LEDs)',
+'BT' : 'BT: battery',
+'R' : 'R: resistor',
+'C' : 'C: general capacitor',
+'SW' : 'SW: switch',
+'P' : 'P: multi-pin connector',
+'J' : 'J: simple connector (video/audio/etc.)',
+'Q' : 'Q: transistor',
+'Y' : 'Y: crystal',
+'T' : 'T: transformer',
+'OTHER' : 'OTHER: catch-all for special part',
+'RN' : 'RN: resistor network',
+'XC' : 'XC: decoupling capacitor',
+'L' : 'L: inductors and ferrite',
+'FB': 'FB: ferrite bead',
+'U' : 'U: ICs',
+'RG' : 'RG: power regulators (like LDOs)',
+'FC' : 'FC: fiducial',
+}
+#'TP' : 'TP: test points',
+#'H' : 'H: holes/vias (sometimes it makes sense to include specific components on the schematic to designate corresponding holes on the layout, like in DDR routing)',
+
 
 offers = document.querySelectorAll(".col-sku a")
 #offers += document.querySelectorAll('.offertable-links-skucol') #This is from an item page, rather than search result.
+
+selectinputs = []
+
+updateSelects = (inputs)->
+  for selectinput in inputs
+    selectinput.onchange (e) ->
+      console.log("got her")
+      console.log(e.value)
+
 for offer in offers
   span = document.createElement('span')
   span.style.textAlign = 'right'
-  cb = document.createElement('input')
-  cb.type = 'checkbox' 
+  select = document.createElement('select')
   offer_id = offer.innerText || offer.textContent
-  cb.name = offer_id
-  cb.value = offer_id #TODO
-  cb.id = offer_id
+  select.id = offer_id
+  select.name = offer_id
+  selectinputs.push(select)
+
+  #if selected?(offer)
+  #options = {'' : '-- Remove --'}
+  options = {'' : '-- To add: Choose a reference category --'}
+  options = extend(options, categories_descriptions)
 
   label = document.createElement('label')
-  label.htmlFor = offer.innerHTML;
-  label.innerHTML = "on <img src='"+chrome.extension.getURL('images/logo38.png')+"' alt='1clickBOM' />"
- 
-  span.appendChild(cb)
+  label.htmlFor = offer.innerHTML
+  label.innerHTML = "<img src='"+chrome.extension.getURL('images/logo38.png')+"' alt='1clickBOM' />"
   span.appendChild(label)
+
+  for value, description of options
+    option = document.createElement("option")
+    #TODO: populate if this part has an actuall ref, rather than a category. If a ref were supplied (e.g., LED5 rather than LED) 
+    option.value = value
+    option.text = description
+    select.appendChild(option)
+  span.appendChild(select)
+
   span.innerHTML = '('+span.innerHTML+')'
   offer.parentNode.appendChild(span)
 
-  span.onclick = (e) ->
+  #TODO: add ajax spinner. library?
+  select.onchange = (e) ->
     setTimeout(() -> 
+      debugger
+      updateSelects(selectinputs)
       name = e.target.name
-      #debugger
-      messenger.send('loadFromRef', name)
+      if e.value == ''
+        messenger.send('removeByRef', e.value)
+      else
+        messenger.send('setRefForPartNumber', name, e.value)
     , 1000
     )
